@@ -4,22 +4,24 @@ const NameForm = ({ rowcol, onChangeRowCol, list, onChangeList, onClose }) => {
     const [names, setNames] = useState(list.join(', '));
     const [row, setRow] = useState(rowcol?.[0] || 0);
     const [col, setCol] = useState(rowcol?.[1] || 0);
+    const [message, setMessage] = useState({status: '', text: ''});
 
-    const [error, setError] = useState('');
+    const showError = (text) => { setMessage({status: 'error', text})};
+    const showInfo = (text) => { setMessage({status: 'info', text})};
 
     // 모달이 열릴 때 초기화
     useEffect(() => {
         setNames(list.join(', '));
         setRow(rowcol?.[0] || 0);
         setCol(rowcol?.[1] || 0);
-        setError('');
+        showInfo("빈 자리는 공백으로 채워집니다.");
     }, [list, rowcol]);
     
 
     const handleSubmit = () => {
         // 검증
         if (row <= 0 || col <= 0 ) {
-            setError('좌석 정보를 입력해주세요');
+            showError('좌석 정보를 입력해주세요');
             return;
         }
 
@@ -29,29 +31,18 @@ const NameForm = ({ rowcol, onChangeRowCol, list, onChangeList, onClose }) => {
             .filter((name) => name.length);
 
         if(nameList.length === 0){
-            setError('이름을 입력해주세요');
+            showError('이름을 입력해주세요');
             return;
         }
         else if(nameList.length > row * col){ // 작성한 이름 개수가 행열의 개수보다 클때
-            setError('선택한 행, 열의 개수보다 이름의 개수가 더 많습니다.');
+            showError('선택한 행, 열의 개수보다 이름의 개수가 더 많습니다.')
             return;
         }
-        else if(nameList.length < row * col){ // 작성한 이름 개수가 행열의 개수보다 작을때
-            setError('선택한 행, 열의 개수보다 이름의 개수가 더 적습니다.');
-            return;
-        }
-
-        setError('');
 
         if (!isNaN(row) && !isNaN(col)) {
             onChangeRowCol([row, col]);
         }
 
-        if (nameList.length <= row * col) {
-            for (let i = 0; i <= (row * col - nameList.length - 1); i++) {
-                nameList.push(`빈자리 ${crypto.randomUUID()}`);
-            }
-        }
 
         if (nameList.length > 0) {
             onChangeList(nameList);
@@ -74,14 +65,21 @@ const NameForm = ({ rowcol, onChangeRowCol, list, onChangeList, onClose }) => {
             </h3>
 
             {/* 에러 메시지 */}
-            {error && (
+            {message.text&& (
                 <div style={{
                     marginBottom: '1.5rem',
                     padding: '1rem',
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    border: '2px solid #ef4444',
+                    backgroundColor:
+                    message.status === 'error' ? 'rgba(239, 68, 68, 0.1)' : '#f1f5f9',
+                    border:
+                    message.status === 'error'
+                    ? '2px solid #ef4444'
+                    : '2px solid #1e293b',
+                    color:
+                    message.status === 'error'
+                    ? '#fca5a5'
+                    : '#1e293b',
                     borderRadius: '0.75rem',
-                    color: '#fca5a5',
                     fontSize: '0.95rem',
                     fontWeight: '600',
                     display: 'flex',
@@ -89,9 +87,11 @@ const NameForm = ({ rowcol, onChangeRowCol, list, onChangeList, onClose }) => {
                     gap: '0.75rem',
                     animation: 'slideDown 0.3s ease-out'
                 }}>
-                    <span style={{ fontSize: '1.25rem' }}>⚠️</span>
-                    {error}
-                </div>
+                   <span style={{ fontSize: '1.25rem' }}>
+                    {message.status === 'error' ? '⚠️' : '💡'}
+                    </span>
+                    {message.text}
+                    </div>
             )}
 
             <form style={{ margin: '0.5rem 0' }} onSubmit={(e) => e.preventDefault()}>
@@ -129,7 +129,7 @@ const NameForm = ({ rowcol, onChangeRowCol, list, onChangeList, onClose }) => {
                             }}
                             onFocus={(e) => {
                                 e.target.style.borderColor = '#47689e';
-                                setError('');
+                                showInfo("빈 자리는 공백으로 채워집니다.");
                             }}
                             onBlur={(e) => {
                                 e.target.style.borderColor = '#475569';
@@ -171,7 +171,7 @@ const NameForm = ({ rowcol, onChangeRowCol, list, onChangeList, onClose }) => {
                             }}
                             onFocus={(e) => {
                                 e.target.style.borderColor = '#47689e';
-                                setError('');
+                                showInfo("빈 자리는 공백으로 채워집니다.");
                             }}
                             onBlur={(e) => {
                                 e.target.style.borderColor = '#475569';
@@ -206,7 +206,7 @@ const NameForm = ({ rowcol, onChangeRowCol, list, onChangeList, onClose }) => {
                             border: '2px solid #475569',
                             borderRadius: '0.75rem',
                             fontSize: '1rem',
-                            color: '#f1f5f9',
+                            color: '#cbd5e1',
                             fontFamily: 'inherit',
                             transition: 'all 0.3s ease',
                             boxSizing: 'border-box',
@@ -216,7 +216,7 @@ const NameForm = ({ rowcol, onChangeRowCol, list, onChangeList, onClose }) => {
                         }}
                         onFocus={(e) => {
                             e.target.style.borderColor = '#47689e';
-                            setError('');
+                            showInfo("빈 자리는 공백으로 채워집니다.");
                         }}
                         onBlur={(e) => {
                             e.target.style.borderColor = '#475569';
