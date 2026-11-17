@@ -1,7 +1,5 @@
-import { useState } from "react";
-
-const SeatItem = ({ data, onClick, locked }) => {
-
+const SeatItem = ({ name, onClick, locked }) => {
+  const isEmpty = name === "";
 
   return (
     <button
@@ -9,7 +7,7 @@ const SeatItem = ({ data, onClick, locked }) => {
       style={{
         width: "80px",
         height: "60px",
-        backgroundColor: (/^빈자리/.test(data)||locked) ? "gray" : "white",
+        backgroundColor: (isEmpty || locked) ? "gray" : "white",
         border: "1px solid #aaa",
         borderRadius: "8px",
         fontSize: "16px",
@@ -19,7 +17,7 @@ const SeatItem = ({ data, onClick, locked }) => {
         overflow: "hidden",
       }}
     >
-      {data}
+      {name}
       {locked && (
         <>
           {/* 대각선1 (/ 방향) */}

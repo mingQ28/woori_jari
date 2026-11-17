@@ -2,7 +2,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import SeatItem from "../../ui/SeatItem";
 
-function SortableSeatItem({ id, data, locked, onClick }) {
+function SortableSeatItem({ id, name, locked, onClick }) {
   const {
     attributes,
     listeners,
@@ -18,7 +18,7 @@ function SortableSeatItem({ id, data, locked, onClick }) {
 
   return (
     <div ref={setNodeRef} {...attributes} style={style}>
-      <SeatItem data={data} locked={locked} onClick={onClick} />
+      <SeatItem name={name} locked={locked} onClick={onClick} />
       <span {...listeners}>-</span>
     </div>
   );

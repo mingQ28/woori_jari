@@ -9,16 +9,7 @@ import Droppable from './Droppable';
 import SortableSeatItem from "./Sortable";
 
 const SeatArrangement = ({ rows, cols, data }) => {
-  const totalSeats = rows * cols;
-
-  // ✅ 부족한 좌석은 공백으로 자동 채우기
-  const padSeats = (arr) => {
-    const filled = [...arr];
-    while (filled.length < totalSeats) filled.push(" "); // 공백 자리 채우기
-    return filled.slice(0, totalSeats);
-  };
-
-  // ✅ 상태 관리
+  // ✅ 상태 관리 — seats: { id, name }[] (빈자리는 name === "")
   const [locked, setLocked] = useState([]);
   const [seats, setSeats] = useState([]);
 
@@ -39,11 +30,16 @@ const SeatArrangement = ({ rows, cols, data }) => {
   };
 
   // ✅ 처음 렌더링 시 — 셔플 없이 순서대로 출력
+  //    부족한 좌석은 빈자리(name: "")로 채우고, 좌석마다 고유 id를 부여
   useEffect(() => {
-    const padded = padSeats(data || []);
-    const initialLocked = Array(totalSeats).fill(false);
-    setLocked(initialLocked);
-    setSeats(padded); // ← 셔플 X, 순서 그대로 표시
+    const total = rows * cols;
+    const names = (data || []).slice(0, total);
+    const initialSeats = Array.from({ length: total }, (_, i) => ({
+      id: `seat-${i}`,
+      name: names[i] ?? "",
+    }));
+    setLocked(Array(total).fill(false));
+    setSeats(initialSeats); // ← 셔플 X, 순서 그대로 표시
   }, [data, rows, cols]);
 
   // ✅ 버튼 클릭 시에만 셔플
@@ -85,11 +81,12 @@ const SeatArrangement = ({ rows, cols, data }) => {
       <DndContext
         onDragEnd={({ active, over }) => {
           if (!over || active.id === over.id) return;
-          const oldIndex = seats.indexOf(active.id);
-          const newIndex = seats.indexOf(over.id);
-          if (oldIndex !== -1 && newIndex !== -1) {
-            setSeats((items) => arraySwap(items, oldIndex, newIndex));
-          }
+          setSeats((items) => {
+            const oldIndex = items.findIndex((seat) => seat.id === active.id);
+            const newIndex = items.findIndex((seat) => seat.id === over.id);
+            if (oldIndex === -1 || newIndex === -1) return items;
+            return arraySwap(items, oldIndex, newIndex);
+          });
         }}
       >
         <Droppable>
@@ -103,14 +100,14 @@ const SeatArrangement = ({ rows, cols, data }) => {
             }}
           >
             <SortableContext
-              items={seats.map((item, index) => item || `empty-${index}`)}
+              items={seats.map((seat) => seat.id)}
               strategy={rectSwappingStrategy}
             >
-              {Array.from({ length: totalSeats }).map((_, index) => (
+              {seats.map((seat, index) => (
                 <SortableSeatItem
-                  key={index}
-                  id={seats[index] || `empty-${index}`}
-                  data={seats[index] || ''}
+                  key={seat.id}
+                  id={seat.id}
+                  name={seat.name}
                   locked={locked[index]}
                   onClick={() => toggleLock(index)}
                 />
